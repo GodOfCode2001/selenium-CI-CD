@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  # Selenium Chrome节点
+  chrome:
+    image: selenium/standalone-chrome:latest
+    container_name: selenium-chrome
+    shm_size: 2g
+    ports:
+      - "4444:4444"
+      - "7900:7900"  # noVNC端口，用于远程查看浏览器
+    environment:
+      - SE_NODE_MAX_SESSIONS=5
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+    
+  # 测试运行器
+  test-runner:
+    image: gradle:jdk17
+    container_name: test-runner
+    depends_on:
+      - chrome
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: >
+      bash -c "sleep 5 && cd tests/mytest && gradle test -Dselenium.grid.url=http://chrome:4444"
